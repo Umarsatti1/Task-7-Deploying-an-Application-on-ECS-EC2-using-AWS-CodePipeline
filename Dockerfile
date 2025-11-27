@@ -1,17 +1,21 @@
-# Use a lightweight and stable NGINX base image
-FROM nginx:stable-alpine
+#Use the official Python base image
+FROM python:3.13-alpine
 
-# Remove the default NGINX configuration
-RUN rm /etc/nginx/conf.d/default.conf
+#Set the working directory inside the container
+WORKDIR /app
 
-# Copy the custom NGINX configuration into the image
-COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+#Copy the requirements file into the container
+COPY requirements.txt .
 
-# Copy the static website files into the default web root directory
-COPY /static/index.html /usr/share/nginx/html/index.html
+#Install the Python dependencies (Flask)
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 80
-EXPOSE 80
+#Copy the application code into the container
+COPY app.py .
 
-# Start NGINX
-CMD ["nginx", "-g", "daemon off;"]
+#Expose the port that the Flask app runs on
+EXPOSE 5000
+
+#Define the command to run the application
+#Use 'python' explicitly instead of the default CMD to ensure proper startup
+CMD ["python", "app.py"]
