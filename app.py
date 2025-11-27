@@ -4,8 +4,8 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    main_heading = "Deploying an Application on ECS EC2 using AWS CodePipeline"
-    secondary_heading = "This is an AWS ECS EC2 deployment with Application Load Balancer and CodePipeline."
+    main_heading = "Deploying an Application on ECS EC2 using AWS CodePipeline v2"
+    secondary_heading = "This application is successfully running on AWS ECS with EC2 launch type using ALB, CodeBuild, and CodePipeline."
     return f"""
     <!DOCTYPE html>
     <html lang="en">
