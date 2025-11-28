@@ -43,7 +43,7 @@ A **Virtual Private Cloud (VPC)** is a logically isolated network within AWS for
 
 **Steps:**
 1. Sign in to AWS Console → VPC → Your VPCs → Create VPC.  
-2. Select **VPC Only** → Name: `Umar-VPC` → IPv4 CIDR: `10.0.0.0/16` → Tenancy: Default.  
+2. Select **VPC Only** and choose a Name and IPv4 CIDR: `10.0.0.0/16` 
 
 **Purpose:** Controls IP range, subnets, routing, and security for both public and private resources.
 
@@ -54,7 +54,7 @@ An **Internet Gateway (IGW)** allows VPC resources to communicate with the inter
 
 **Steps:**
 1. VPC Console → Internet Gateways → Create internet gateway.  
-2. Name: `Umar-IGW` → Attach to VPC (`Umar-VPC`).  
+2. Choose a Name and attach it to the VPC.  
 
 ---
 
@@ -63,7 +63,7 @@ A **NAT Gateway** provides outbound internet access for private instances withou
 
 **Steps:**
 1. VPC Console → NAT Gateways → Create NAT gateway.  
-2. Select **Public Subnet**, assign **Elastic IP** → Name: `Umar-NAT-GW`.  
+2. Select **Public Subnet**, assign **Elastic IP** and Name.  
 
 **Note:** For high availability, deploy NAT Gateways in multiple AZs; here, one is sufficient.  
 
@@ -89,8 +89,8 @@ A **NAT Gateway** provides outbound internet access for private instances withou
 
 ### Task 1.6: Set Up Routes for Route Tables
 **Routes configured:**
-- Public: `0.0.0.0/0 → Umar-IGW`  
-- Private: `0.0.0.0/0 → Umar-NAT-GW`  
+- Public: `0.0.0.0/0 → Internet Gateway`
+- Private: `0.0.0.0/0 → NAT Gateway`  
 
 ---
 
@@ -105,16 +105,16 @@ Associates subnets to their respective route tables:
 Defines network access rules.  
 
 **Examples:**
-- `Umar-ALB-SG`: HTTP 80 from all  
+- `ALB-SG`: HTTP 80 from all  
 - `Bastion-SG`: SSH 22 from personal IP  
-- `Umar-ECS-SG`: HTTP 80/5000 from ALB, SSH 22 from Bastion  
+- `ECS-SG`: HTTP 80/5000 from ALB, SSH 22 from Bastion  
 
 ---
 
 ### Task 1.9: Public EC2 Instance
 **Bastion Host EC2**
 - AMI: Amazon Linux 2023, t3.micro  
-- Key Pair: `umarsatti.pem`  
+- Key Pair: `keypair.pem`  
 - Public subnet, security group `Bastion-SG`  
 
 **Purpose:** SSH access to private EC2 instances.  
@@ -123,16 +123,16 @@ Defines network access rules.
 
 ### Task 1.10: ECR
 **Steps:**
-1. Create repository `umar-ecr`  
+1. Create a Private ECR repository 
 2. Push Docker image from local machine to ECR  
 
 ---
 
 ### Task 1.11: ECS Cluster
-**Cluster:** `umar-ecs-cluster`  
+**Cluster:** 
 - Launch type: EC2  
 - Auto Scaling: 2 EC2 instances in private subnets  
-- Security group: `Umar-ECS-SG`  
+- Security group: `ECS-SG`  
 
 **Purpose:** Runs containerized application tasks on private EC2 instances.  
 
@@ -145,9 +145,9 @@ Defines network access rules.
 ---
 
 ### Task 1.13: ECS Task Definition
-**Task Definition:** `Umar-ecs-ec2-task-definition`  
+**Task Definition:** 
 - Container: Flask app  
-- Image: `umar-ecr`  
+- Image: ECR Repository  
 - Ports: 5000 (host & container)  
 - IAM Role: `ecsTaskExecutionRole`  
 
@@ -155,12 +155,12 @@ Defines network access rules.
 
 ### Task 1.14: Application Load Balancer and Target Groups
 **ALB:** Internet-facing, public subnets  
-**Target Group:** `umar-ecs-target-group` → Private EC2 instances port 5000  
+**Target Group:** `ecs-target-group` → Private EC2 instances port 5000  
 
 ---
 
 ### Task 1.15: ECS Service
-**Service:** `Umar-ecs-ec2-task-definition-service`  
+**Service:** `ecs-ec2-task-definition-service`  
 - Desired tasks: 2  
 - Rolling updates enabled  
 - Integrated with ALB for traffic distribution  
@@ -168,7 +168,7 @@ Defines network access rules.
 ---
 
 ### Task 1.16: CodeBuild
-**Project:** `Umar-EC2-ECS-CodeBuild`  
+**Project:** `EC2-ECS-CodeBuild`  
 - Source: GitHub repo  
 - Privileged mode: Enabled for Docker  
 - VPC: Private subnets  
@@ -188,7 +188,7 @@ Defines network access rules.
 ---
 
 ### Task 1.17: CodePipeline
-**Pipeline:** `Umar-EC2-ECS-Pipeline`  
+**Pipeline:** `EC2-ECS-Pipeline`  
 - Source: GitHub  
 - Build: CodeBuild  
 - Deploy: ECS Service  
@@ -204,7 +204,7 @@ Defines network access rules.
 
 ### Task 1.19: IAM Roles, CloudWatch Logs, and S3 Bucket
 **Roles:**
-- `codebuild-Umar-ECS-EC2-service-role` → Build & push Docker images  
+- `CodeBuildServiceRole` → Build & push Docker images  
 - `AWSCodePipelineServiceRole` → Orchestrates pipeline  
 - `ecsTaskExecutionRole` → ECS task permissions  
 
