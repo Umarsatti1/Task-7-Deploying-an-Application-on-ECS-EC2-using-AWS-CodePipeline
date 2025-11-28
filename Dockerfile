@@ -17,5 +17,4 @@ COPY app.py .
 EXPOSE 5000
 
 #Define the command to run the application
-#Use 'python' explicitly instead of the default CMD to ensure proper startup
 CMD ["python", "app.py"]
